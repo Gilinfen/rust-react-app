@@ -27,7 +27,7 @@ jobs:
 
       # 接下来是你的其他步骤，比如安装依赖、构建等
       - name: Install dependencies
-        run: pnpm install
+        run: npm install --no-frozen-lockfile
 
       # 设置 Rust 环境
       - name: Install Rust
