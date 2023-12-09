@@ -55,3 +55,9 @@ pub fn execute_python_script() -> Result<String, String> {
         Err(format!("Python script execution failed: {}", error_str))
     }
 }
+
+// 安装依赖
+#[tauri::command]
+pub fn python_install() {
+    
+}

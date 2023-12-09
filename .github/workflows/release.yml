@@ -11,10 +11,11 @@ env:
 jobs:
   build_and_release:
     name: Build and Release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest]
+    runs-on: windows-latest
+    # runs-on: ${{ matrix.os }}
+    # strategy:
+    #   matrix:
+    #     os: [macos-latest, windows-latest]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -43,20 +44,27 @@ jobs:
       - name: Build App
         run: cargo tauri build
 
+      # 创建 GitHub Release
       - name: Create GitHub Release
-        if: matrix.os == 'macos-latest'
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-        #   token: ${{ secrets.CLASH_TOKEN }}
+          files: src-tauri/target/release/bundle/msi/*.zip
+          token: ${{ secrets.CLASH_TOKEN }}
+      #   - name: Create GitHub Release
+      #     if: matrix.os == 'macos-latest'
+      #     uses: softprops/action-gh-release@v1
+      #     with:
+      #       files: |
+      #         src-tauri/target/release/bundle/dmg/*.dmg
+      #       token: ${{ secrets.CLASH_TOKEN }}
 
-      - name: Create GitHub Release
-        if: matrix.os == 'windows-latest'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: src-tauri/target/release/bundle/msi/*.msi
-        #   token: ${{ secrets.CLASH_TOKEN }}
+      #   - name: Create GitHub Release
+      #     if: matrix.os == 'windows-latest'
+      #     uses: softprops/action-gh-release@v1
+      #     with:
+      #       files: src-tauri/target/release/bundle/msi/*.msi
+      #       token: ${{ secrets.CLASH_TOKEN }}
 
       - name: Check outputs
         run: echo "Release created with tag ${{ github.ref }}"
