@@ -49,14 +49,14 @@ jobs:
         with:
           files: |
             src-tauri/target/release/bundle/dmg/*.dmg
-          token: ${{ secrets.GITHUB_TOKEN }}
+        #   token: ${{ secrets.CLASH_TOKEN }}
 
       - name: Create GitHub Release
         if: matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v1
         with:
           files: src-tauri/target/release/bundle/msi/*.msi
-          token: ${{ secrets.GITHUB_TOKEN }}
+        #   token: ${{ secrets.CLASH_TOKEN }}
 
       - name: Check outputs
         run: echo "Release created with tag ${{ github.ref }}"
