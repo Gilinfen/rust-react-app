@@ -5,6 +5,9 @@ on:
   push:
     tags:
       - 'v*'
+# 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
+env:
+  GITHUB_TOKEN: ${{ secrets.CLASH_TOKEN  }}
 
 jobs:
   build_and_release:
@@ -52,8 +55,6 @@ jobs:
         with:
           files: |
             src-tauri/target/release/bundle/dmg/*.dmg
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 完成后的输出
       - name: Check outputs
