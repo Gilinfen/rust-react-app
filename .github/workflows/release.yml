@@ -23,20 +23,26 @@ jobs:
           profile: minimal
           override: true
 
-      - name: Install Tauri Dependencies
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
         run: |
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            choco install nodejs-lts --version 14.17.0
-            choco install python --version 3.9.0
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            brew install node@14
-            brew install python@3.9
-          fi
+          npm install
+          npm run build
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version '^1.0.0' --locked
 
       - name: Build
-        run: |
-          cargo install tauri-bundler --force
-          cargo tauri build
+        run: tauri build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
