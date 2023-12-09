@@ -14,6 +14,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14' # 或你需要的任何版本
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      # 接下来是你的其他步骤，比如安装依赖、构建等
+      - name: Install dependencies
+        run: pnpm install
+
       # 设置 Rust 环境
       - name: Install Rust
         uses: actions-rs/toolchain@v1
