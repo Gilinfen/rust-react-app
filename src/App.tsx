@@ -7,7 +7,7 @@ function App() {
   const [greetMsg, setGreetMsg] = useState('')
   const [name, setName] = useState('')
   const [python_status, setPython] = useState('')
-  const [pip_status, setPip] = useState('')
+  const [times, setTimes] = useState(0)
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -32,20 +32,16 @@ function App() {
       <p>{greetMsg}</p>
       <Button
         onClick={async () => {
-          setPip(await invoke('python_install'))
-        }}
-      >
-        安装依赖
-      </Button>
-      <p>{pip_status}</p>
-      <Button
-        onClick={async () => {
+          const time1 = +new Date()
           setPython(await invoke('execute_python_script'))
+          const time2 = +new Date()
+          setTimes(time2 - time1)
         }}
       >
         测试Python
       </Button>
       <p>{python_status}</p>
+      <p>耗时：{times / 1000} s</p>
     </div>
   )
 }

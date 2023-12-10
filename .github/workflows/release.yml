@@ -19,6 +19,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
+      # node
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
@@ -30,6 +31,25 @@ jobs:
       - name: Install dependencies
         run: npm install --no-frozen-lockfile
 
+      # 设置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      # 安装 Python 依赖
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r python/requirements.txt
+          pip install pyinstaller
+
+      # 使用 PyInstaller 打包 Python 应用
+      - name: Package Python application with PyInstaller
+        run: |
+          pyinstaller -F python/main.py --distpath python/dist/${{ matrix.os == 'macos-latest' && 'mac' || 'win' }}
+
+      # rust
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -43,14 +63,18 @@ jobs:
       - name: Build App
         run: cargo tauri build
 
+      # 发布
       - name: Create GitHub Release
         if: matrix.os == 'macos-latest'
         uses: softprops/action-gh-release@v1
         with:
           files: |
             src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
+            python/dist/mac/main  # macOS Python 打包结果
           token: ${{ secrets.MAX_TOKEN }}
 
+      # 发布
       - name: Create GitHub Release
         if: matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v1
@@ -58,6 +82,7 @@ jobs:
           files: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/**/*.exe
+            python/dist/win/main.exe  # Windows Python 打包结果
           token: ${{ secrets.MAX_TOKEN }}
 
       - name: Check outputs

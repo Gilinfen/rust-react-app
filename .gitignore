@@ -24,4 +24,6 @@ dist-ssr
 *.sw?
 
 # python
-python/app
+python/venv
+python/build
+python/*.spec
