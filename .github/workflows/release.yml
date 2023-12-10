@@ -55,7 +55,9 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v1
         with:
-          files: src-tauri/target/release/bundle/msi/*.msi
+          files: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/**/*.exe
           token: ${{ secrets.MAX_TOKEN }}
 
       - name: Check outputs
