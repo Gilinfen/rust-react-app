@@ -71,7 +71,7 @@ jobs:
           files: |
             src-tauri/target/release/bundle/dmg/*.dmg
             src-tauri/target/release/bundle/macos/*.app
-            python/dist/mac/main  # macOS Python 打包结果
+            python/dist/mac/main
           token: ${{ secrets.MAX_TOKEN }}
 
       # 发布
@@ -82,7 +82,7 @@ jobs:
           files: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/**/*.exe
-            python/dist/win/main.exe  # Windows Python 打包结果
+            python/dist/win/main.exe
           token: ${{ secrets.MAX_TOKEN }}
 
       - name: Check outputs
