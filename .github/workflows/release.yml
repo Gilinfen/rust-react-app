@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest-xlarge, windows-latest]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -47,7 +47,7 @@ jobs:
       # 使用 PyInstaller 打包 Python 应用
       - name: Package Python application with PyInstaller
         run: |
-          pyinstaller -F python/main.py --distpath python/dist/${{ matrix.os == 'macos-latest' && 'mac' || 'win' }}
+          pyinstaller -F python/main.py --distpath python/dist/${{ matrix.os == 'macos-latest-xlarge' && 'mac' || 'win' }}
 
       # rust
       - name: Install Rust
@@ -65,7 +65,7 @@ jobs:
 
       # 发布
       - name: Create GitHub Release
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-latest-xlarge'
         uses: softprops/action-gh-release@v1
         with:
           files: |
