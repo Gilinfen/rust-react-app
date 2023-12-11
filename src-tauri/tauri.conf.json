@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": ["../python/dist"]
+      "resources": ["../pythonrc"]
     },
     "security": {
       "csp": null

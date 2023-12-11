@@ -27,3 +27,4 @@ dist-ssr
 python/venv
 python/build
 python/*.spec
+pythonrc

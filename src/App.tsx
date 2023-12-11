@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { invoke } from '@tauri-apps/api/tauri'
 import { Button, Input } from 'antd'
 import './App.css'
+import LogViewer from './log'
 
 function App() {
   const [greetMsg, setGreetMsg] = useState('')
   const [name, setName] = useState('')
   const [python_status, setPython] = useState('')
+  const [pythonPath, setPythonPath] = useState<string>()
   const [times, setTimes] = useState(0)
 
   async function greet() {
@@ -30,6 +32,22 @@ function App() {
         Greet
       </Button>
       <p>{greetMsg}</p>
+      <Input
+        id="python"
+        value={pythonPath}
+        onChange={(e) => setPythonPath(e.currentTarget.value.trim())}
+        placeholder="手动输入python地址"
+      />
+      <Button
+        onClick={async () => {
+          if (!pythonPath) return
+          await invoke('python_path', {
+            path: pythonPath,
+          })
+        }}
+      >
+        手动设置 python
+      </Button>
       <Button
         onClick={async () => {
           const time1 = +new Date()
@@ -42,6 +60,7 @@ function App() {
       </Button>
       <p>{python_status}</p>
       <p>耗时：{times / 1000} s</p>
+      <LogViewer />
     </div>
   )
 }
