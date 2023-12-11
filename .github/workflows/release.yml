@@ -48,7 +48,7 @@ jobs:
       # 使用 PyInstaller 打包 Python 应用
       - name: Package Python application with PyInstaller
         run: |
-          pyinstaller -F python/main.py --distpath python/dist/${{ matrix.os == 'macos-latest' && 'mac' || 'win' }}
+          pyinstaller -F python/main.py --distpath python/dist/
 
       # rust
       - name: Install Rust
