@@ -38,6 +38,7 @@
       {
         "fullscreen": false,
         "resizable": true,
+        "decorations": true,
         "title": "rust-react",
         "width": 800,
         "height": 600

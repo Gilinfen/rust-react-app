@@ -10,6 +10,7 @@ lazy_static! {
     static ref PYTHON_PATH: Mutex<Option<String>> = Mutex::new(None);
 }
 
+// 初始化 python 路径全局变量
 pub fn init_python_path() -> Result<(), String> {
     let path = find_command_path("python3").map_err(|e| format!("Error finding python path: {}", e))?;
     let mut python_path = PYTHON_PATH.lock().unwrap();
@@ -17,6 +18,7 @@ pub fn init_python_path() -> Result<(), String> {
     Ok(())
 }
 
+// 更新 python 路径全局变量
 pub fn set_python_path(new_path: String) {
     let mut python_path = PYTHON_PATH.lock().unwrap();
     *python_path = Some(new_path);

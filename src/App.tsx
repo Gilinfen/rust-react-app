@@ -1,37 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/tauri'
 import { Button, Input } from 'antd'
 import './App.css'
 import LogViewer from './log'
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState('')
-  const [name, setName] = useState('')
   const [python_status, setPython] = useState('')
   const [pythonPath, setPythonPath] = useState<string>()
   const [times, setTimes] = useState(0)
+  const [chormeV, setChormeV] = useState('')
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke('greet', { name }))
+  const init_fun = async () => {
+    setChormeV(await invoke('get_chrome_version_command'))
   }
+
+  useEffect(() => {
+    init_fun()
+  }, [])
 
   return (
     <div className="container">
-      <Input
-        id="greet-input"
-        onChange={(e) => setName(e.currentTarget.value)}
-        placeholder="Enter a name..."
-      />
-      <Button
-        onClick={async () => {
-          await greet()
-        }}
-        type="primary"
-      >
-        Greet
-      </Button>
-      <p>{greetMsg}</p>
+      <h1>{chormeV}</h1>
+      <h2>Python：3.11.5</h2>
       <Input
         id="python"
         value={pythonPath}

@@ -3,10 +3,12 @@
 
 mod pystart;
 mod utils;
+mod chorme_v;
 
 use pystart::execute_python_script;
 use pystart::python_path;
 use pystart::init_python_path;
+use chorme_v::get_chrome_version_command;
 
 use log::{Record, Level, Metadata, LevelFilter};
 use log::info;
@@ -34,21 +36,20 @@ impl log::Log for TauriLogger {
 }
 
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet,execute_python_script,python_path])
+        .invoke_handler(tauri::generate_handler![
+            execute_python_script,
+            python_path,
+            get_chrome_version_command
+            ])
         .setup(|app| {
             // 初始化 Python 路径
             if let Err(e) = init_python_path() {
                 info!("Failed to initialize Python path: {}", e);
                 // 这里你可以决定是否要中止应用
             }
+
             // 注册日志监听
             let logger = TauriLogger { app_handle: app.handle().clone() };
             log::set_boxed_logger(Box::new(logger))

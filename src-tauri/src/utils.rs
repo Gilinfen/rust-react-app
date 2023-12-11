@@ -12,7 +12,7 @@ pub fn find_command_path(command_name: &str) -> Result<String, String> {
     run_command(command, command_name)
 }
 
-fn run_command(command: &str, arg: &str) -> Result<String, String> {
+pub fn run_command(command: &str, arg: &str) -> Result<String, String> {
     let output = Command::new(command)
         .arg(arg)
         .output();
