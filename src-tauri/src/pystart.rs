@@ -3,9 +3,19 @@ use std::process::Command;
 
 // 执行 python
 #[tauri::command]
-pub fn execute_python_script() -> Result<String, String> {
-    let executable_path = "../python/dist/main"; // 更新为你的可执行文件的路径
-
+pub fn execute_python_script(handle: tauri::AppHandle) -> Result<String, String> {
+    let python_path = "../python/dist/main";
+    let executable_path = if cfg!(debug_assertions) {
+        // 开发路径
+        python_path.to_string()
+    } else {
+        // 生产路径
+        handle.path_resolver()
+            .resolve_resource(python_path)
+            .expect("failed to resolve resource")
+            .to_str().unwrap().to_string()
+    };
+    
     let output = match Command::new(executable_path)
         .output() {
         Ok(o) => o,

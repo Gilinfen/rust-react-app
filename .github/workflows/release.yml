@@ -14,7 +14,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        # os: [macos-latest, windows-latest]
+        os: [windows-latest]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -64,15 +65,15 @@ jobs:
         run: cargo tauri build
 
       # 发布
-      - name: Create GitHub Release
-        if: matrix.os == 'macos-latest'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app
-            python/dist/mac/main
-          token: ${{ secrets.MAX_TOKEN }}
+      # - name: Create GitHub Release
+      #   if: matrix.os == 'macos-latest'
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       src-tauri/target/release/bundle/dmg/*.dmg
+      #       src-tauri/target/release/bundle/macos/*.app
+      #       python/dist/mac/main
+      #     token: ${{ secrets.MAX_TOKEN }}
 
       # 发布
       - name: Create GitHub Release
