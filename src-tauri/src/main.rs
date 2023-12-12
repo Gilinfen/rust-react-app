@@ -7,10 +7,11 @@ mod chorme_v;
 mod logger;
 mod config;
 
-use pystart::execute_python_script;
+use pystart::{execute_python_script,init_python_path};
 use chorme_v::get_chrome_version_command;
 use logger::configure_logging;
 use config::{update_json_command, read_json_command};
+use utils::{APP_HANDLE};
 
 fn main() {
     tauri::Builder::default()
@@ -21,8 +22,13 @@ fn main() {
             read_json_command
             ])
         .setup(|app| {
+            // 设置全局变量
+            APP_HANDLE.set(app.handle().clone()).expect("AppHandle set failed");
             // 注册日志监听
             configure_logging(app.handle().clone());
+ 
+            // 初始化 python 路径
+            // init_python_path();
             Ok(())
         })
         .run(tauri::generate_context!())

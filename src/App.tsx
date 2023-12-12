@@ -7,15 +7,19 @@ import Chrome from './chrome'
 
 function App() {
   const [python_status, setPython] = useState('')
-  const [pythonPath, setPythonPath] = useState<string>()
   const [times, setTimes] = useState(0)
   const [chormeV, setChormeV] = useState('')
   const [settings, setSettings] = useState<any>()
   const [python_path, setpython_path] = useState('')
 
   const init_fun = async () => {
-    setChormeV(await invoke('get_chrome_version_command'))
-    setSettings(await invoke('read_json_command'))
+    await invoke('get_chrome_version_command')
+      .then((res: any) => setChormeV(res))
+      .catch(() => setChormeV(''))
+
+    await invoke('read_json_command')
+      .then((res: any) => setSettings(res))
+      .catch(() => setSettings(''))
   }
 
   useEffect(() => {
@@ -28,6 +32,7 @@ function App() {
         python_path,
       },
     })
+    await init_fun()
   }
 
   return (
@@ -42,22 +47,6 @@ function App() {
       <h1>{chormeV}</h1>
       <Chrome />
       <h2>Python：3.11.5</h2>
-      <Input
-        id="python"
-        value={pythonPath}
-        onChange={(e) => setPythonPath(e.currentTarget.value.trim())}
-        placeholder="手动输入python地址"
-      />
-      <Button
-        onClick={async () => {
-          if (!pythonPath) return
-          await invoke('python_path', {
-            path: pythonPath,
-          })
-        }}
-      >
-        手动设置 python
-      </Button>
       <Button
         onClick={async () => {
           const time1 = +new Date()

@@ -1,36 +1,23 @@
 name: Release
-
 on:
   push:
     tags:
       - 'v*'
-# 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
-env:
-  GITHUB_TOKEN: ${{ secrets.MAX_TOKEN  }}
+  workflow_dispatch:
 
 jobs:
-  build_and_release:
-    name: Build and Release
-    runs-on: ${{ matrix.os }}
+  release:
+    permissions:
+      contents: write
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest]
+        platform: [macos-latest, ubuntu-20.04, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      # node
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Install dependencies
-        run: npm install --no-frozen-lockfile
-
+      - name: Checkout repository
+        uses: actions/checkout@v3
       # 设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -41,40 +28,39 @@ jobs:
       - name: Install Python dependencies
         run: python ./convert.py
 
-      # rust
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - name: Install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        # You can remove libayatana-appindicator3-dev if you don't use the system tray feature.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libayatana-appindicator3-dev librsvg2-dev
+
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
         with:
-          toolchain: stable
-          profile: minimal
-          override: true
+          workspaces: './src-tauri -> target'
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version ^1.0
-
-      - name: Build App
-        run: cargo tauri build
-
-      # 发布
-      - name: Create GitHub Release
-        if: matrix.os == 'macos-latest'
-        uses: softprops/action-gh-release@v1
+      - name: Sync node version and setup cache
+        uses: actions/setup-node@v3
         with:
-          files: |
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/macos/*.app
-          token: ${{ secrets.MAX_TOKEN }}
+          node-version: 'lts/*'
+          cache: 'yarn' # Set this to npm, yarn or pnpm.
 
-      # 发布
-      - name: Create GitHub Release
-        if: matrix.os == 'windows-latest'
-        uses: softprops/action-gh-release@v1
+      - name: Install frontend dependencies
+        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
+        run: yarn install # Change this to npm, yarn or pnpm.
+
+      - name: Build the app
+        uses: tauri-apps/tauri-action@v0
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.MAX_TOKEN }}
         with:
-          files: |
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/bundle/**/*.exe
-            python/dist/win/main.exe
-          token: ${{ secrets.MAX_TOKEN }}
-
-      - name: Check outputs
-        run: echo "Release created with tag ${{ github.ref }}"
+          tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
+          releaseName: 'App Name v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
+          releaseBody: 'See the assets to download and install this version.'
+          releaseDraft: true
+          prerelease: false

@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+# 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
+env:
+  GITHUB_TOKEN: ${{ secrets.MAX_TOKEN  }}
+
+jobs:
+  build_and_release:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      # node
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: npm install --no-frozen-lockfile
+
+      # 设置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.5'
+
+      # 安装 Python 依赖
+      - name: Install Python dependencies
+        run: python ./convert.py
+
+      # rust
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version ^1.0
+
+      - name: Build App
+        run: cargo tauri build
+
+      # 发布
+      - name: Create GitHub Release
+        if: matrix.os == 'macos-latest'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/macos/*.app
+          token: ${{ secrets.MAX_TOKEN }}
+
+      # 发布
+      - name: Create GitHub Release
+        if: matrix.os == 'windows-latest'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/**/*.exe
+          token: ${{ secrets.MAX_TOKEN }}
+
+      - name: Check outputs
+        run: echo "Release created with tag ${{ github.ref }}"

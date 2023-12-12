@@ -2179,6 +2179,7 @@ version = "0.0.0"
 dependencies = [
  "lazy_static",
  "log",
+ "once_cell",
  "serde",
  "serde_json",
  "tauri",

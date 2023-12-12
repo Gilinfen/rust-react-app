@@ -1,36 +1,47 @@
 use std::process::Command;
 use log::info;
 // use log::{info, warn, error, debug, trace};
-use crate::utils::find_command_path;
-use crate::config::read_json;
+use crate::utils::{find_command_path,read_json,resolve_resource_path};
+use crate::config::{read_json_command,update_json_command};
+
+pub fn init_python_path() {
+    let result = find_command_path("python3");
+
+    match result {
+        Ok(pypath) => {
+            // 首先，处理 read_json_command 返回的 Result
+            match read_json_command() {
+                Ok(mut settings_data) => {
+                    // 成功获取 settings_data，现在可以修改它
+                    settings_data.python_path = pypath;
+                    update_json_command(settings_data);
+                },
+                Err(e) => {
+                    // 处理读取 JSON 数据时的错误
+                    info!("Error reading settings data: {}", e);
+                }
+            }
+        },
+        Err(e) => {
+            // 处理寻找 python 路径时的错误
+            info!("Error finding python path: {}", e);
+        }
+    }
+}
 
 // 执行 python
 #[tauri::command]
-pub fn execute_python_script(handle: tauri::AppHandle,) -> Result<String, String> {
-    match read_json() {
-        Ok(data) => {
-            info!("Read data: {:?}", data);
-        },
-        Err(e) => {
-            info!("Error reading JSON file: {}", e);
-        }
-    };
+pub fn execute_python_script() -> Result<String, String> {
+    let settings_data = read_json_command();
 
     // 获取 Python 路径
-    let python_path = "";
+    let python_path = match settings_data {
+        Ok(data) => data.python_path,
+        Err(e) => return Err(e),
+    };
     
     // 执行文件路径
-    let python_path_cmd = "../pythonrc/main.pyc";
-    let executable_path = if cfg!(debug_assertions) {
-        // 开发路径
-        python_path_cmd.to_string()
-    } else {
-        // 生产路径
-        handle.path_resolver()
-            .resolve_resource(python_path_cmd)
-            .expect("failed to resolve resource")
-            .to_str().unwrap().to_string()
-    };
+    let executable_path = resolve_resource_path("../pythonrc/main.pyc");
 
     info!("python_path: -- {}",python_path);
     info!("executable_path: -- {}",executable_path);
