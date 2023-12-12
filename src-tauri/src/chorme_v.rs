@@ -52,7 +52,17 @@ fn get_chrome_version() -> Result<String, String> {
 }
 
 
+// chorme 版本
 #[tauri::command]
 pub fn get_chrome_version_command() -> Result<String, String> {
     get_chrome_version()
+}
+
+// 获取 chrome/chromedriver url
+#[tauri::command]
+pub fn get_file_url(val: &str, position: &str, files: &str) -> String {
+    format!(
+        "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/{}%2F{}%2F{}?alt=media",
+        val, position, files
+    )
 }

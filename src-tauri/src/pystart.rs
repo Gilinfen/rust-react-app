@@ -1,38 +1,23 @@
 use std::process::Command;
-use crate::utils::find_command_path;
-// use log::{info, warn, error, debug, trace};
 use log::info;
-
-use std::sync::Mutex;
-use lazy_static::lazy_static;
-
-lazy_static! {
-    static ref PYTHON_PATH: Mutex<Option<String>> = Mutex::new(None);
-}
-
-// 初始化 python 路径全局变量
-pub fn init_python_path() -> Result<(), String> {
-    let path = find_command_path("python3").map_err(|e| format!("Error finding python path: {}", e))?;
-    let mut python_path = PYTHON_PATH.lock().unwrap();
-    *python_path = Some(path);
-    Ok(())
-}
-
-// 更新 python 路径全局变量
-pub fn set_python_path(new_path: String) {
-    let mut python_path = PYTHON_PATH.lock().unwrap();
-    *python_path = Some(new_path);
-}
+// use log::{info, warn, error, debug, trace};
+use crate::utils::find_command_path;
+use crate::config::read_json;
 
 // 执行 python
 #[tauri::command]
 pub fn execute_python_script(handle: tauri::AppHandle,) -> Result<String, String> {
-    // 获取 Python 路径
-    let python_path = PYTHON_PATH.lock().unwrap();
-    let python_path = match *python_path {
-        Some(ref path) => path,
-        None => return Err("Python path is not set".into()),
+    match read_json() {
+        Ok(data) => {
+            info!("Read data: {:?}", data);
+        },
+        Err(e) => {
+            info!("Error reading JSON file: {}", e);
+        }
     };
+
+    // 获取 Python 路径
+    let python_path = "";
     
     // 执行文件路径
     let python_path_cmd = "../pythonrc/main.pyc";
@@ -67,11 +52,4 @@ pub fn execute_python_script(handle: tauri::AppHandle,) -> Result<String, String
         info!("Python script execution failed: {}", error_str);
         Err(format!("Python script execution failed: {}", error_str))
     }
-}
-
-// 手动设置 python
-#[tauri::command]
-pub fn python_path(path: String) {
-    info!("{}",path);
-    set_python_path(path);
 }

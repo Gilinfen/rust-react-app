@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": ["../pythonrc"]
+      "resources": ["../pythonrc", "./settings.json"]
     },
     "security": {
       "csp": null

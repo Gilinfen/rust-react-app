@@ -3,24 +3,44 @@ import { invoke } from '@tauri-apps/api/tauri'
 import { Button, Input } from 'antd'
 import './App.css'
 import LogViewer from './log'
+import Chrome from './chrome'
 
 function App() {
   const [python_status, setPython] = useState('')
   const [pythonPath, setPythonPath] = useState<string>()
   const [times, setTimes] = useState(0)
   const [chormeV, setChormeV] = useState('')
+  const [settings, setSettings] = useState<any>()
+  const [python_path, setpython_path] = useState('')
 
   const init_fun = async () => {
     setChormeV(await invoke('get_chrome_version_command'))
+    setSettings(await invoke('read_json_command'))
   }
 
   useEffect(() => {
     init_fun()
   }, [])
 
+  const updateSe = async () => {
+    await invoke('update_json_command', {
+      data: {
+        python_path,
+      },
+    })
+  }
+
   return (
     <div className="container">
+      <h1>Settings</h1>
+      <p>{settings?.python_path}</p>
+      <Input
+        value={python_path}
+        onChange={(e) => setpython_path(e.target.value)}
+      />
+      <Button onClick={updateSe}>修改 Settings</Button>
       <h1>{chormeV}</h1>
+      <Chrome />
       <h2>Python：3.11.5</h2>
       <Input
         id="python"
