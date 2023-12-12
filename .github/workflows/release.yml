@@ -18,6 +18,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: npm install --no-frozen-lockfile
+
       # 设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v2
