@@ -27,9 +27,6 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install dependencies
-        run: npm install --no-frozen-lockfile
-
       # 设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v2
