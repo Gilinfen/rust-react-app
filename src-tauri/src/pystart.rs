@@ -1,7 +1,7 @@
 use std::process::Command;
 use log::info;
 // use log::{info, warn, error, debug, trace};
-use crate::utils::{find_command_path,read_json,resolve_resource_path};
+use crate::utils::{find_command_path,resolve_resource_path};
 use crate::config::{read_json_command,update_json_command};
 
 pub fn init_python_path() {
@@ -14,7 +14,7 @@ pub fn init_python_path() {
                 Ok(mut settings_data) => {
                     // 成功获取 settings_data，现在可以修改它
                     settings_data.python_path = pypath;
-                    update_json_command(settings_data);
+                    let _ = update_json_command(settings_data);
                 },
                 Err(e) => {
                     // 处理读取 JSON 数据时的错误

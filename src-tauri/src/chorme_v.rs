@@ -1,5 +1,10 @@
+use reqwest;
 use std::process::Command;
 use std::str;
+use std::fs::File;
+use std::io::copy;
+use std::path::Path;
+
 
 #[cfg(target_os = "macos")]
 fn get_chrome_version() -> Result<String, String> {
@@ -59,10 +64,50 @@ pub fn get_chrome_version_command() -> Result<String, String> {
 }
 
 // 获取 chrome/chromedriver url
-#[tauri::command]
-pub fn get_file_url(val: &str, position: &str, files: &str) -> String {
+fn get_file_url(val: &str, position: &str, files: &str) -> String {
     format!(
         "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/{}%2F{}%2F{}?alt=media",
         val, position, files
     )
+}
+
+async fn download_and_extract(url: &str, target_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    // 下载文件
+    let response = reqwest::get(url).await?;
+    let mut file = File::create("temp.zip")?;
+    copy(&mut response.bytes().await?.as_ref(), &mut file)?;
+
+    // 解压文件
+    let mut archive = zip::ZipArchive::new(File::open("temp.zip")?)?;
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i)?;
+        let outpath = target_dir.join(file.sanitized_name());
+
+        if (*file.name()).ends_with('/') {
+            std::fs::create_dir_all(&outpath)?;
+        } else {
+            if let Some(p) = outpath.parent() {
+                if !p.exists() {
+                    std::fs::create_dir_all(&p)?;
+                }
+            }
+            let mut outfile = File::create(&outpath)?;
+            copy(&mut file, &mut outfile)?;
+        }
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn download_chromedriver() {
+    // 启动异步任务进行下载，但不等待它完成
+    tokio::spawn(async {
+        let url = get_file_url("Win", "1226644", "chromedriver_win32.zip");
+        let target_dir = Path::new("/Users/Fox/Code/Rust/rust-react/src-tauri");
+        // 处理异步下载和解压，但不阻塞主线程
+        if let Err(e) = download_and_extract(&url, target_dir).await {
+            eprintln!("Error downloading: {}", e);
+        }
+    });
 }

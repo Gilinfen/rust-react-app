@@ -14,6 +14,3 @@ export const DownloadUrl = {
     'https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Mac/584585/',
   base: 'https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=',
 }
-
-export const getfile = (val: string, position: string, files: string) =>
-  `https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/${val}%2F${position}%2F${files}?alt=media`

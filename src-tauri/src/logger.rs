@@ -1,5 +1,4 @@
 use log::{self, Log, Record, Metadata, LevelFilter};
-use log::info;
 use log::Level;
 use tauri::AppHandle;
 use tauri::Manager;
