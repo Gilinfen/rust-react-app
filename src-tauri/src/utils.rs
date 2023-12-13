@@ -1,12 +1,13 @@
-use std::process::Command;
-use std::str;
-use serde::{Serialize};
-use serde::de::DeserializeOwned;
-use std::fs::{self, File};
-use std::io::{self, Read};
 use log::info;
-use tauri::{AppHandle};
 use once_cell::sync::OnceCell;
+use serde::{de::DeserializeOwned, Serialize};
+use std::{
+    fs::{self, File},
+    io::{self, Read},
+    process::Command,
+    str,
+};
+use tauri::AppHandle;
 
 pub static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
 
@@ -18,10 +19,13 @@ pub fn resolve_resource_path(resource_path: &str) -> String {
         resource_path.to_string()
     } else {
         // 生产路径
-        app_handle.path_resolver()
+        app_handle
+            .path_resolver()
             .resolve_resource(resource_path)
             .expect("failed to resolve resource")
-            .to_str().unwrap().to_string()
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 }
 
@@ -37,7 +41,7 @@ pub fn read_json<T: DeserializeOwned>(file_name: &str) -> io::Result<T> {
 }
 
 // 修改 json
-pub fn update_json<T: Serialize>(data: &T,file_name: &str) -> io::Result<()> {
+pub fn update_json<T: Serialize>(data: &T, file_name: &str) -> io::Result<()> {
     let file_path = resolve_resource_path(file_name);
     let contents = serde_json::to_string(data)?;
     fs::write(file_path, contents)?;
@@ -56,24 +60,18 @@ pub fn find_command_path(command_name: &str) -> Result<String, String> {
 }
 
 pub fn run_command(command: &str, arg: &str) -> Result<String, String> {
-    let output = Command::new(command)
-        .arg(arg)
-        .output();
+    let output = Command::new(command).arg(arg).output();
 
     match output {
         Ok(o) => {
             if o.status.success() {
-                let path_str = str::from_utf8(&o.stdout)
-                    .unwrap_or("")
-                    .trim()
-                    .to_string();
+                let path_str = str::from_utf8(&o.stdout).unwrap_or("").trim().to_string();
                 Ok(path_str)
             } else {
-                let err_str = str::from_utf8(&o.stderr)
-                    .unwrap_or("Unknown error");
+                let err_str = str::from_utf8(&o.stderr).unwrap_or("Unknown error");
                 Err(err_str.to_string())
             }
-        },
+        }
         Err(e) => Err(e.to_string()),
     }
 }

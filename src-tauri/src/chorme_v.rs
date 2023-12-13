@@ -1,10 +1,5 @@
 use reqwest;
-use std::process::Command;
-use std::str;
-use std::fs::File;
-use std::io::copy;
-use std::path::Path;
-
+use std::{fs::File, io::copy, path::Path, process::Command, str};
 
 #[cfg(target_os = "macos")]
 fn get_chrome_version() -> Result<String, String> {
@@ -29,7 +24,10 @@ fn get_chrome_version() -> Result<String, String> {
         .map_err(|e| e.to_string())?;
 
     if output.status.success() {
-        Ok(str::from_utf8(&output.stdout).unwrap_or("").trim().to_string())
+        Ok(str::from_utf8(&output.stdout)
+            .unwrap_or("")
+            .trim()
+            .to_string())
     } else {
         Err("Failed to get Chrome version on macOS".into())
     }
@@ -40,12 +38,20 @@ fn get_chrome_version() -> Result<String, String> {
     // 这里的代码可以根据您的具体需求进行调整
     // 示例代码仅供参考
     let output = Command::new("reg")
-        .args(["query", r"HKLM\Software\Google\Chrome\BLBeacon", "/v", "version"])
+        .args([
+            "query",
+            r"HKLM\Software\Google\Chrome\BLBeacon",
+            "/v",
+            "version",
+        ])
         .output()
         .map_err(|e| e.to_string())?;
 
     if output.status.success() {
-        Ok(str::from_utf8(&output.stdout).unwrap_or("").trim().to_string())
+        Ok(str::from_utf8(&output.stdout)
+            .unwrap_or("")
+            .trim()
+            .to_string())
     } else {
         Err("Failed to get Chrome version on Windows".into())
     }
@@ -55,7 +61,6 @@ fn get_chrome_version() -> Result<String, String> {
 fn get_chrome_version() -> Result<String, String> {
     Err("Unsupported operating system".into())
 }
-
 
 // chorme 版本
 #[tauri::command]
@@ -71,7 +76,10 @@ fn get_file_url(val: &str, position: &str, files: &str) -> String {
     )
 }
 
-async fn download_and_extract(url: &str, target_dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
+async fn download_and_extract(
+    url: &str,
+    target_dir: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
     // 下载文件
     let response = reqwest::get(url).await?;
     let mut file = File::create("temp.zip")?;
@@ -81,7 +89,7 @@ async fn download_and_extract(url: &str, target_dir: &Path) -> Result<(), Box<dy
     let mut archive = zip::ZipArchive::new(File::open("temp.zip")?)?;
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
-        let outpath = target_dir.join(file.sanitized_name());
+        let outpath = target_dir.join(file.mangled_name());
 
         if (*file.name()).ends_with('/') {
             std::fs::create_dir_all(&outpath)?;

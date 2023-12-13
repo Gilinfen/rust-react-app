@@ -1,8 +1,8 @@
-use std::process::Command;
 use log::info;
+use std::process::Command;
 // use log::{info, warn, error, debug, trace};
-use crate::utils::{find_command_path,resolve_resource_path};
-use crate::config::{read_json_command,update_json_command};
+use crate::config::{read_json_command, update_json_command};
+use crate::utils::{find_command_path, resolve_resource_path};
 
 pub fn init_python_path() {
     let result = find_command_path("python3");
@@ -15,13 +15,13 @@ pub fn init_python_path() {
                     // 成功获取 settings_data，现在可以修改它
                     settings_data.python_path = pypath;
                     let _ = update_json_command(settings_data);
-                },
+                }
                 Err(e) => {
                     // 处理读取 JSON 数据时的错误
                     info!("Error reading settings data: {}", e);
                 }
             }
-        },
+        }
         Err(e) => {
             // 处理寻找 python 路径时的错误
             info!("Error finding python path: {}", e);
@@ -39,24 +39,22 @@ pub fn execute_python_script() -> Result<String, String> {
         Ok(data) => data.python_path,
         Err(e) => return Err(e),
     };
-    
+
     // 执行文件路径
     let executable_path = resolve_resource_path("../pythonrc/main.pyc");
 
-    info!("python_path: -- {}",python_path);
-    info!("executable_path: -- {}",executable_path);
+    info!("python_path: -- {}", python_path);
+    info!("executable_path: -- {}", executable_path);
 
     // 使用获取到的 Python 路径执行命令
-    let output = match Command::new(python_path)
-        .arg(executable_path)
-        .output() {
+    let output = match Command::new(python_path).arg(executable_path).output() {
         Ok(o) => o,
         Err(e) => return Err(format!("Failed to execute Python script: {}", e)),
     };
 
     if output.status.success() {
         let output_str = String::from_utf8_lossy(&output.stdout).to_string();
-        info!("SUCCESS: {}",output_str);
+        info!("SUCCESS: {}", output_str);
         Ok("SUCCESS".to_string())
     } else {
         let error_str = String::from_utf8_lossy(&output.stderr).to_string();

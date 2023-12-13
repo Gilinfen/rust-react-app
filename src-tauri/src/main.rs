@@ -1,38 +1,34 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod chorme_v;
+mod config;
+mod logger;
 mod pystart;
 mod utils;
-mod chorme_v;
-mod logger;
-mod config;
-
-use pystart::{execute_python_script};
-use chorme_v::{get_chrome_version_command,download_chromedriver};
-use logger::configure_logging;
-use config::{update_json_command, read_json_command,detection_environment,get_os_info,init_settings};
-use utils::{APP_HANDLE};
 
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            execute_python_script,
-            get_chrome_version_command,
-            update_json_command,
-            read_json_command,
-            get_os_info,
-            download_chromedriver
-            ])
-        .setup(|app| {
+            pystart::execute_python_script,
+            chorme_v::get_chrome_version_command,
+            chorme_v::download_chromedriver,
+            config::update_json_command,
+            config::read_json_command,
+            config::get_os_info,
+        ])
+        .setup(|app: &mut tauri::App| {
             // 设置全局变量
-            APP_HANDLE.set(app.handle().clone()).expect("AppHandle set failed");
+            utils::APP_HANDLE
+                .set(app.handle().clone())
+                .expect("AppHandle set failed");
             // 注册日志监听
-            configure_logging(app.handle().clone());
+            logger::configure_logging(app.handle().clone());
 
-            log::info!("detection_environment,{}",detection_environment());
- 
+            log::info!("detection_environment,{}", config::detection_environment());
+
             // 初始化 settings
-            init_settings();
+            config::init_settings();
             Ok(())
         })
         .run(tauri::generate_context!())
