@@ -1,4 +1,4 @@
-use crate::globalstate::GlobalState;
+use crate::globalstate::APP_HANDLE;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{
     fs::{self, File},
@@ -10,7 +10,7 @@ use std::{
 /// 路径转换
 pub fn resolve_resource_path(resource_path: &str) -> String {
     // let app_handle = APP_HANDLE.get().expect("AppHandle not set");
-    let app_handle = GlobalState::get_app_handle().unwrap();
+    let app_handle: &tauri::AppHandle = APP_HANDLE.get().expect("全局 Tauri App 访问失败");
     if cfg!(debug_assertions) {
         // 开发路径
         resource_path.to_string()

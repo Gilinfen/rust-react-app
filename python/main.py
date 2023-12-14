@@ -2,6 +2,23 @@
 
 # 按 ⌃R 执行或将其替换为您的代码。
 # 按 双击 ⇧ 在所有地方搜索类、文件、工具窗口、操作和设置。
+import json
+import os
+
+# 获取当前工作目录
+current_directory = os.getcwd()
+
+# 打印当前工作目录
+print(f"当前所在目录：{current_directory}")
+
+# 打开并读取JSON文件
+# with open('../settings.json', 'r') as file:
+#     data = json.load(file)
+
+# # 打印读取的数据
+# print(f"JSON 对象：{data}")
+
+
 
 
 def print_hi(name):

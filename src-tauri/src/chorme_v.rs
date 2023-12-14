@@ -1,6 +1,7 @@
-use crate::globalstate::GlobalState;
-use log::{error, info};
+use log::info;
 use reqwest;
+use serde::{Deserialize, Serialize};
+use serde_json::to_string;
 use std::{
     fs::{remove_file, File},
     io::copy,
@@ -8,6 +9,10 @@ use std::{
     process::Command,
     str,
 };
+use tauri::{api::path::resource_dir, AppHandle, Manager};
+use tokio::spawn;
+
+use crate::config::{read_json_command, update_json_command};
 
 #[cfg(target_os = "macos")]
 fn get_chrome_version() -> Result<String, String> {
@@ -77,10 +82,10 @@ pub fn get_chrome_version_command() -> Result<String, String> {
 }
 
 // 获取 chrome/chromedriver url
-fn get_file_url(val: &str, position: &str, files: &str) -> String {
+fn get_file_url(osval: &str, position: &str, files: &str) -> String {
     format!(
         "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/{}%2F{}%2F{}?alt=media",
-        val, position, files
+        osval, position, files
     )
 }
 
@@ -119,23 +124,91 @@ async fn download_and_extract(
     Ok(())
 }
 
+#[derive(Deserialize, Debug)]
+pub struct DownloadParams {
+    // 定义对象的字段
+    os: String,
+    files: String,
+    position: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct DowReData {
+    message: String,
+    data: u32,
+}
+
 /// 下载 chromedriver
 #[tauri::command]
-pub async fn download_chromedriver() {
-    // 启动异步任务进行下载，但不等待它完成
-    tokio::spawn(async {
-        let url: String = get_file_url("Win", "1226644", "chromedriver_win32.zip");
-        if let Some(data_dir) = GlobalState::get_resource_dir() {
-            // 处理异步下载和解压，但不阻塞主线程
-            if let Err(e) = download_and_extract(&url, &data_dir).await {
-                error!("Error downloading: {}", e);
-            } else {
-                info!("App data directory: {:?}", data_dir);
-                info!("解压完成")
+pub async fn download_chromedriver(app_handle: AppHandle, params: DownloadParams) {
+    // 从 AppHandle 中获取 PackageInfo 和 Env
+    let package_info = app_handle.package_info().clone();
+    let env = app_handle.env().clone();
+
+    spawn(async move {
+        // 获取资源目录路径
+        let res_dir: std::path::PathBuf =
+            resource_dir(&package_info, &env).expect("Failed to get resource directory");
+
+        // 构造下载 URL
+        let url: String = get_file_url(&params.os, &params.position, &params.files);
+
+        // 异步下载和解压
+        match download_and_extract(&url, &res_dir).await {
+            Ok(_) => {
+                info!(
+                    "Download and extraction completed successfully. {:?}{:?}",
+                    res_dir, package_info
+                );
+
+                let data: DowReData = DowReData {
+                    message: "Download and extraction completed successfully".to_string(),
+                    data: 200,
+                };
+
+                let json: String = to_string(&data).expect("Failed to serialize data");
+
+                // 其他成功处理...
+                app_handle
+                    .emit_all("message-download-chromedriver", Some(json))
+                    .expect("failed to emit event");
+
+                // 设置路径
+                match read_json_command() {
+                    Ok(mut settings_data) => {
+                        let stem = Path::new(&params.files)
+                            .file_stem()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("");
+                        // 成功获取 settings_data，现在可以修改它
+                        settings_data.chromedriver = format!(
+                            "{}/{}/{}/chromedriver",
+                            res_dir.to_string_lossy(),
+                            package_info.name,
+                            stem
+                        );
+                        let _ = update_json_command(settings_data);
+                    }
+                    Err(e) => {
+                        // 处理读取 JSON 数据时的错误
+                        info!("Error reading settings data: {}", e);
+                    }
+                }
             }
-            // 使用 data_dir ...
-        } else {
-            error!("Failed to get app data directory.");
+            Err(e) => {
+                let data: DowReData = DowReData {
+                    message: format!("Error downloading: {}", e),
+                    data: 500,
+                };
+                let json = to_string(&data).expect("Failed to serialize data");
+
+                // 错误处理...
+                app_handle
+                    .emit_all("message-download-chromedriver", Some(json))
+                    .expect("failed to emit event");
+
+                log::error!("Error downloading: {}", e)
+            }
         }
     });
 }

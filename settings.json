@@ -1,5 +1,1 @@
-{
-  "python_path": "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3",
-  "os_info": "Mac_Arm",
-  "is_chromedriver": false
-}
+{"python_path":"/Library/Frameworks/Python.framework/Versions/3.11/bin/python3","os_info":"Mac_Arm","chromedriver":"/Users/Fox/Code/Rust/rust-react/src-tauri/target/debug/rust-react/chromedriver_win32/chromedriver"}

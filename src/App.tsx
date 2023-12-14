@@ -43,6 +43,7 @@ function App() {
     <div className="container">
       <h1>Settings</h1>
       <p>{settings?.python_path}</p>
+      <p>{settings?.chromedriver}</p>
       <Input
         value={python_path}
         onChange={(e) => setpython_path(e.target.value)}

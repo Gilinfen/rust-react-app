@@ -8,8 +8,8 @@ pub struct JsonData {
     pub python_path: String,
     /// 系统信息
     pub os_info: String,
-    /// chromedriver 是否下载完成
-    pub is_chromedriver: bool,
+    /// chromedriver 路径
+    pub chromedriver: String,
 }
 
 #[tauri::command]

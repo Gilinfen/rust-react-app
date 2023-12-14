@@ -1,5 +1,7 @@
 use log::info;
 use std::process::Command;
+use tauri::api::path::resource_dir;
+use tauri::{AppHandle, Manager};
 // use log::{info, warn, error, debug, trace};
 use crate::config::{read_json_command, update_json_command};
 use crate::utils::{find_command_path, resolve_resource_path};
@@ -32,7 +34,13 @@ pub fn init_python_path() {
 
 /// 执行 python
 #[tauri::command]
-pub fn execute_python_script() -> Result<String, String> {
+pub fn execute_python_script(app_handle: AppHandle) -> Result<String, String> {
+    let package_info = app_handle.package_info().clone();
+    let env = app_handle.env().clone();
+    // 获取资源目录路径
+    let res_dir = resource_dir(&package_info, &env).expect("Failed to get resource directory");
+
+    // 获取 settings json 内容
     let settings_data = read_json_command();
 
     // 获取 Python 路径
@@ -48,7 +56,11 @@ pub fn execute_python_script() -> Result<String, String> {
     info!("executable_path: -- {}", executable_path);
 
     // 使用获取到的 Python 路径执行命令
-    let output = match Command::new(python_path).arg(executable_path).output() {
+    let output = match Command::new(python_path)
+        .arg(executable_path)
+        .current_dir(res_dir) // 设置工作目录为资源目录
+        .output()
+    {
         Ok(o) => o,
         Err(e) => return Err(format!("Failed to execute Python script: {}", e)),
     };
