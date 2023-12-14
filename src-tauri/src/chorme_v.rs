@@ -3,14 +3,16 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 use std::{
-    fs::{remove_file, File},
+    env::temp_dir,
+    fs::{self, File},
     io::copy,
     path::Path,
     process::Command,
     str,
 };
-use tauri::{api::path::resource_dir, AppHandle, Manager};
+use tauri::{api::path::app_data_dir, AppHandle, Manager};
 use tokio::spawn;
+use zip::ZipArchive;
 
 use crate::config::{read_json_command, update_json_command};
 
@@ -89,28 +91,33 @@ fn get_file_url(osval: &str, position: &str, files: &str) -> String {
     )
 }
 
-/// 下载 解压 chromedriver
 async fn download_and_extract(
+    app_handle: &AppHandle,
     url: &str,
-    target_dir: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
+    // 获取应用的数据目录
+    let data_dir = app_data_dir(&app_handle.config()).expect("failed to get app data dir");
+    let temp_file = temp_dir().join("temp.zip");
+
+    println!("data_dir --- {:?}", data_dir);
+
     // 下载文件
     let response = reqwest::get(url).await?;
-    let mut file = File::create("temp.zip")?;
+    let mut file = File::create(&temp_file)?;
     copy(&mut response.bytes().await?.as_ref(), &mut file)?;
 
     // 解压文件
-    let mut archive = zip::ZipArchive::new(File::open("temp.zip")?)?;
+    let mut archive = ZipArchive::new(File::open(&temp_file)?)?;
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
-        let outpath = target_dir.join(file.mangled_name());
+        let outpath = data_dir.join(file.mangled_name());
 
         if (*file.name()).ends_with('/') {
-            std::fs::create_dir_all(&outpath)?;
+            fs::create_dir_all(&outpath)?;
         } else {
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
-                    std::fs::create_dir_all(&p)?;
+                    fs::create_dir_all(&p)?;
                 }
             }
             let mut outfile = File::create(&outpath)?;
@@ -119,7 +126,7 @@ async fn download_and_extract(
     }
 
     // 删除下载的文件
-    remove_file("temp.zip")?;
+    fs::remove_file(temp_file)?;
 
     Ok(())
 }
@@ -141,24 +148,25 @@ struct DowReData {
 /// 下载 chromedriver
 #[tauri::command]
 pub async fn download_chromedriver(app_handle: AppHandle, params: DownloadParams) {
-    // 从 AppHandle 中获取 PackageInfo 和 Env
-    let package_info = app_handle.package_info().clone();
-    let env = app_handle.env().clone();
-
     spawn(async move {
+        let file_name = Path::new(&params.files)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("");
+
         // 获取资源目录路径
-        let res_dir: std::path::PathBuf =
-            resource_dir(&package_info, &env).expect("Failed to get resource directory");
+        let res_dir = app_data_dir(&app_handle.config()).expect("failed to get app data dir");
 
         // 构造下载 URL
         let url: String = get_file_url(&params.os, &params.position, &params.files);
 
         // 异步下载和解压
-        match download_and_extract(&url, &res_dir).await {
+        match download_and_extract(&app_handle, &url).await {
             Ok(_) => {
                 info!(
-                    "Download and extraction completed successfully. {:?}{:?}",
-                    res_dir, package_info
+                    "Download and extraction completed successfully. {}/{}/chromedriver",
+                    res_dir.to_string_lossy(),
+                    file_name.to_string()
                 );
 
                 let data: DowReData = DowReData {
@@ -176,16 +184,11 @@ pub async fn download_chromedriver(app_handle: AppHandle, params: DownloadParams
                 // 设置路径
                 match read_json_command() {
                     Ok(mut settings_data) => {
-                        let stem = Path::new(&params.files)
-                            .file_stem()
-                            .and_then(|s| s.to_str())
-                            .unwrap_or("");
                         // 成功获取 settings_data，现在可以修改它
                         settings_data.chromedriver = format!(
-                            "{}/{}/{}/chromedriver",
+                            "{}/{}/chromedriver",
                             res_dir.to_string_lossy(),
-                            package_info.name,
-                            stem
+                            file_name.to_string()
                         );
                         let _ = update_json_command(settings_data);
                     }
