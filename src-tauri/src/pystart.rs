@@ -4,6 +4,7 @@ use std::process::Command;
 use crate::config::{read_json_command, update_json_command};
 use crate::utils::{find_command_path, resolve_resource_path};
 
+/// 初始化 python
 pub fn init_python_path() {
     let result = find_command_path("python3");
 
@@ -29,7 +30,7 @@ pub fn init_python_path() {
     }
 }
 
-// 执行 python
+/// 执行 python
 #[tauri::command]
 pub fn execute_python_script() -> Result<String, String> {
     let settings_data = read_json_command();

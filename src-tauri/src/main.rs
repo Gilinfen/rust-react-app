@@ -3,9 +3,11 @@
 
 mod chorme_v;
 mod config;
+mod globalstate;
 mod logger;
 mod pystart;
 mod utils;
+mod windows;
 
 fn main() {
     tauri::Builder::default()
@@ -16,12 +18,11 @@ fn main() {
             config::update_json_command,
             config::read_json_command,
             config::get_os_info,
+            windows::app_ready
         ])
         .setup(|app: &mut tauri::App| {
-            // 设置全局变量
-            utils::APP_HANDLE
-                .set(app.handle().clone())
-                .expect("AppHandle set failed");
+            // 设置资源路径
+            globalstate::GlobalState::set_global_state(&app);
             // 注册日志监听
             logger::configure_logging(app.handle().clone());
 
@@ -29,7 +30,11 @@ fn main() {
 
             // 初始化 settings
             config::init_settings();
+
             Ok(())
+        })
+        .on_window_event(|_event| {
+            // 窗口事件发生时的操作
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

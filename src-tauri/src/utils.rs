@@ -1,5 +1,4 @@
-use log::info;
-use once_cell::sync::OnceCell;
+use crate::globalstate::GlobalState;
 use serde::{de::DeserializeOwned, Serialize};
 use std::{
     fs::{self, File},
@@ -7,13 +6,11 @@ use std::{
     process::Command,
     str,
 };
-use tauri::AppHandle;
 
-pub static APP_HANDLE: OnceCell<AppHandle> = OnceCell::new();
-
-// 路径转换
+/// 路径转换
 pub fn resolve_resource_path(resource_path: &str) -> String {
-    let app_handle = APP_HANDLE.get().expect("AppHandle not set");
+    // let app_handle = APP_HANDLE.get().expect("AppHandle not set");
+    let app_handle = GlobalState::get_app_handle().unwrap();
     if cfg!(debug_assertions) {
         // 开发路径
         resource_path.to_string()
@@ -29,10 +26,9 @@ pub fn resolve_resource_path(resource_path: &str) -> String {
     }
 }
 
-// 读取 json
+/// 读取 json
 pub fn read_json<T: DeserializeOwned>(file_name: &str) -> io::Result<T> {
     let file_path = resolve_resource_path(file_name);
-    info!("file_path {}", file_path);
     let mut file = File::open(file_path)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
@@ -40,7 +36,7 @@ pub fn read_json<T: DeserializeOwned>(file_name: &str) -> io::Result<T> {
     Ok(data)
 }
 
-// 修改 json
+/// 修改 json
 pub fn update_json<T: Serialize>(data: &T, file_name: &str) -> io::Result<()> {
     let file_path = resolve_resource_path(file_name);
     let contents = serde_json::to_string(data)?;
@@ -48,7 +44,7 @@ pub fn update_json<T: Serialize>(data: &T, file_name: &str) -> io::Result<()> {
     Ok(())
 }
 
-// 通用的函数，允许传入不同的命令
+/// 通用的函数，允许传入不同的命令
 pub fn find_command_path(command_name: &str) -> Result<String, String> {
     let command = if cfg!(target_os = "windows") {
         "where"

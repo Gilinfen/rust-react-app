@@ -11,6 +11,7 @@
     "version": "0.0.0"
   },
   "tauri": {
+    "macOSPrivateApi": true,
     "allowlist": {
       "all": false,
       "shell": {
@@ -36,12 +37,22 @@
     },
     "windows": [
       {
+        "label": "main",
+        "visible": false,
         "fullscreen": false,
         "resizable": true,
         "decorations": true,
         "title": "rust-react",
         "width": 800,
         "height": 600
+      },
+      {
+        "label": "loading",
+        "decorations": false,
+        "url": "assets/loading.html",
+        "transparent": true,
+        "width": 100,
+        "height": 100
       }
     ]
   }

@@ -4,9 +4,9 @@ use log::info;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct JsonData {
-    // 定义您的数据结构
+    /// 定义您的数据结构
     pub python_path: String,
-    // 系统信息
+    /// 系统信息
     pub os_info: String,
 }
 
@@ -20,7 +20,7 @@ pub fn update_json_command(data: JsonData) -> Result<(), String> {
     update_json(&data, "../settings.json").map_err(|e| e.to_string())
 }
 
-// 检测环境
+/// 检测环境
 pub fn detection_environment() -> bool {
     let python = "";
     let chorme = "";
@@ -28,7 +28,7 @@ pub fn detection_environment() -> bool {
     !python.is_empty() && !chorme.is_empty() && !chromedriver.is_empty()
 }
 
-// 获取系统信息
+/// 获取系统信息
 #[tauri::command]
 pub fn get_os_info() -> &'static str {
     match (std::env::consts::OS, std::env::consts::ARCH) {
@@ -40,7 +40,7 @@ pub fn get_os_info() -> &'static str {
     }
 }
 
-// 初始化 setting
+/// 初始化 setting
 pub fn init_settings() {
     // 初始化 python 路径
     init_python_path();

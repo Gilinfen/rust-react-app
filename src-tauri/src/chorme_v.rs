@@ -1,5 +1,13 @@
+use crate::globalstate::GlobalState;
+use log::{error, info};
 use reqwest;
-use std::{fs::File, io::copy, path::Path, process::Command, str};
+use std::{
+    fs::{remove_file, File},
+    io::copy,
+    path::Path,
+    process::Command,
+    str,
+};
 
 #[cfg(target_os = "macos")]
 fn get_chrome_version() -> Result<String, String> {
@@ -104,18 +112,27 @@ async fn download_and_extract(
         }
     }
 
+    // 删除下载的文件
+    remove_file("temp.zip")?;
+
     Ok(())
 }
 
+/// 下载 chromedriver
 #[tauri::command]
 pub async fn download_chromedriver() {
     // 启动异步任务进行下载，但不等待它完成
     tokio::spawn(async {
-        let url = get_file_url("Win", "1226644", "chromedriver_win32.zip");
-        let target_dir = Path::new("/Users/Fox/Code/Rust/rust-react/src-tauri");
-        // 处理异步下载和解压，但不阻塞主线程
-        if let Err(e) = download_and_extract(&url, target_dir).await {
-            eprintln!("Error downloading: {}", e);
+        let url: String = get_file_url("Win", "1226644", "chromedriver_win32.zip");
+        if let Some(data_dir) = GlobalState::get_resource_dir() {
+            info!("App data directory: {:?}", data_dir);
+            // 处理异步下载和解压，但不阻塞主线程
+            if let Err(e) = download_and_extract(&url, &data_dir).await {
+                error!("Error downloading: {}", e);
+            }
+            // 使用 data_dir ...
+        } else {
+            error!("Failed to get app data directory.");
         }
     });
 }
