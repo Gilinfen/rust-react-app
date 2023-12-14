@@ -12,11 +12,11 @@ current_directory = os.getcwd()
 print(f"当前所在目录：{current_directory}")
 
 # 打开并读取JSON文件
-# with open('../settings.json', 'r') as file:
-#     data = json.load(file)
+with open('./settings.json', 'r') as file:
+    data = json.load(file)
 
-# # 打印读取的数据
-# print(f"JSON 对象：{data}")
+# 打印读取的数据
+print(f"JSON 对象：{data}")
 
 
 

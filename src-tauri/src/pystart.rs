@@ -1,7 +1,5 @@
 use log::info;
 use std::process::Command;
-use tauri::api::path::resource_dir;
-use tauri::{AppHandle, Manager};
 // use log::{info, warn, error, debug, trace};
 use crate::config::{read_json_command, update_json_command};
 use crate::utils::{find_command_path, resolve_resource_path};
@@ -34,11 +32,9 @@ pub fn init_python_path() {
 
 /// 执行 python
 #[tauri::command]
-pub fn execute_python_script(app_handle: AppHandle) -> Result<String, String> {
-    let package_info = app_handle.package_info().clone();
-    let env = app_handle.env().clone();
-    // 获取资源目录路径
-    let res_dir = resource_dir(&package_info, &env).expect("Failed to get resource directory");
+pub fn execute_python_script() -> Result<String, String> {
+    let res_dir = resolve_resource_path("../");
+    info!("res_dir: -- {}", res_dir);
 
     // 获取 settings json 内容
     let settings_data = read_json_command();

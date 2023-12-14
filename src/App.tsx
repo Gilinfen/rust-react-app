@@ -33,6 +33,7 @@ function App() {
   const updateSe = async () => {
     await invoke('update_json_command', {
       data: {
+        ...settings,
         python_path,
       },
     })
