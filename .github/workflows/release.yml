@@ -27,11 +27,10 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Sync node version and setup cache
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: '18'
-          cache: 'pnpm' # Set this to npm, yarn or pnpm.
+          node-version: '16'
 
       - name: Install pnpm
         run: npm install -g pnpm

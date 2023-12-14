@@ -84,6 +84,7 @@ fn get_file_url(val: &str, position: &str, files: &str) -> String {
     )
 }
 
+/// 下载 解压 chromedriver
 async fn download_and_extract(
     url: &str,
     target_dir: &Path,
@@ -125,10 +126,12 @@ pub async fn download_chromedriver() {
     tokio::spawn(async {
         let url: String = get_file_url("Win", "1226644", "chromedriver_win32.zip");
         if let Some(data_dir) = GlobalState::get_resource_dir() {
-            info!("App data directory: {:?}", data_dir);
             // 处理异步下载和解压，但不阻塞主线程
             if let Err(e) = download_and_extract(&url, &data_dir).await {
                 error!("Error downloading: {}", e);
+            } else {
+                info!("App data directory: {:?}", data_dir);
+                info!("解压完成")
             }
             // 使用 data_dir ...
         } else {
