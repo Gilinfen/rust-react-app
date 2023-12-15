@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react'
-import { invoke } from '@tauri-apps/api/tauri'
 import { Button, Input } from 'antd'
 import './App.css'
 import LogViewer from './log'
 import Chrome from './chrome'
+import { tyInvoke } from './invoke'
 
 function App() {
-  const [python_status, setPython] = useState('')
   const [times, setTimes] = useState(0)
   const [chormeV, setChormeV] = useState('')
   const [settings, setSettings] = useState<any>()
   const [python_path, setpython_path] = useState('')
 
   const init_fun = async () => {
-    await invoke('get_chrome_version_command')
+    await tyInvoke('get_chrome_version_command')
       .then((res: any) => setChormeV(res))
       .catch(() => setChormeV(''))
 
-    await invoke('read_json_command')
+    await tyInvoke('read_json_command')
       .then((res: any) => setSettings(res))
       .catch(() => setSettings(''))
   }
@@ -27,11 +26,11 @@ function App() {
   }, [])
   useEffect(() => {
     // 页面加载完成后通知 Tauri 显示窗口
-    invoke('app_ready')
+    tyInvoke('app_ready')
   }, [])
 
   const updateSe = async () => {
-    await invoke('update_json_command', {
+    await tyInvoke('update_json_command', {
       data: {
         ...settings,
         python_path,
@@ -56,14 +55,27 @@ function App() {
       <Button
         onClick={async () => {
           const time1 = +new Date()
-          setPython(await invoke('execute_python_script'))
+          await tyInvoke('execute_python_script', {
+            cmdType: 'Python',
+          })
           const time2 = +new Date()
           setTimes(time2 - time1)
         }}
       >
         测试Python
       </Button>
-      <p>{python_status}</p>
+      <Button
+        onClick={async () => {
+          const time1 = +new Date()
+          await tyInvoke('execute_python_script', {
+            cmdType: 'Pip',
+          })
+          const time2 = +new Date()
+          setTimes(time2 - time1)
+        }}
+      >
+        安装依赖
+      </Button>
       <p>耗时：{times / 1000} s</p>
       <LogViewer />
     </div>

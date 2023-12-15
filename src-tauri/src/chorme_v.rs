@@ -19,7 +19,7 @@ use tokio::spawn;
 use zip::ZipArchive;
 
 #[cfg(target_os = "macos")]
-fn get_chrome_version() -> Result<String, String> {
+async fn get_chrome_version() -> Result<String, String> {
     let chrome_path_output = Command::new("mdfind")
         .arg("kMDItemCFBundleIdentifier == 'com.google.Chrome'")
         .output()
@@ -36,8 +36,7 @@ fn get_chrome_version() -> Result<String, String> {
         .unwrap_or("");
 
     let chrome_command = format!("{}/Contents/MacOS/Google Chrome", chrome_path);
-    run_command(&chrome_command, &["--version"])
-        .or_else(|_| Err("Failed to get Chrome version on macOS".into()))
+    run_command(&chrome_command, &["--version"], None).await
 }
 
 #[cfg(target_os = "windows")]
@@ -61,12 +60,12 @@ fn get_chrome_version() -> Result<String, String> {
 
 // chorme 版本
 #[tauri::command]
-pub fn get_chrome_version_command() -> Result<String, String> {
-    let version: Result<String, String> = get_chrome_version();
-    match &version {
-        Ok(v) => info!("Chrome version: {}", v),
-        Err(e) => info!("Error getting Chrome version: {}", e),
-    }
+pub async fn get_chrome_version_command() -> Result<String, String> {
+    let version: Result<String, String> = get_chrome_version().await;
+    // match &version {
+    //     Ok(v) => info!("Chrome version: {}", v),
+    //     Err(e) => info!("Error getting Chrome version: {}", e),
+    // }
     version
 }
 

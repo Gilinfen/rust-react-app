@@ -4,8 +4,10 @@ use log::info;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct JsonData {
-    /// 定义您的数据结构
+    /// python 路径
     pub python_path: String,
+    /// pip 路径
+    pub pip_path: String,
     /// 系统信息
     pub os_info: String,
     /// chromedriver 路径
@@ -45,7 +47,7 @@ pub fn get_os_info() -> &'static str {
 /// 初始化 setting
 pub fn init_settings() {
     // 初始化 python 路径
-    init_python_path();
+    let _ = init_python_path();
     // 设置 os info
     let os_val: String = get_os_info().to_string();
     match read_json_command() {
