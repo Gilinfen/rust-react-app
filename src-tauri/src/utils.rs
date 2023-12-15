@@ -51,6 +51,7 @@ pub async fn find_command_path(command_name: &str) -> Result<String, String> {
     run_command(command, &[command_name], None).await
 }
 
+/// 运行终端指令
 pub async fn run_command(
     command: &str,
     args: &[&str],

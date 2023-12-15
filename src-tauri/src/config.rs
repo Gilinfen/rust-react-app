@@ -1,6 +1,6 @@
-use crate::pystart::init_python_path;
 use crate::utils::{read_json, update_json};
 use log::info;
+use tauri::AppHandle;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct JsonData {
@@ -8,6 +8,12 @@ pub struct JsonData {
     pub python_path: String,
     /// pip 路径
     pub pip_path: String,
+    /// python 虚拟环境路径
+    pub venv_python_path: String,
+    /// pip 虚拟环境路径
+    pub venv_pip_path: String,
+    /// 资源目录
+    pub res_dir: String,
     /// 系统信息
     pub os_info: String,
     /// chromedriver 路径
@@ -45,15 +51,23 @@ pub fn get_os_info() -> &'static str {
 }
 
 /// 初始化 setting
-pub fn init_settings() {
-    // 初始化 python 路径
-    let _ = init_python_path();
+pub fn init_settings(app: &AppHandle) {
     // 设置 os info
     let os_val: String = get_os_info().to_string();
     match read_json_command() {
         Ok(mut settings_data) => {
+            // 生产资源路径
+            let res_dir = app
+                .path_resolver()
+                .resolve_resource("../")
+                .expect("failed to resolve resource")
+                .to_str()
+                .unwrap()
+                .to_string();
             // 成功获取 settings_data，现在可以修改它
             settings_data.os_info = os_val;
+            settings_data.res_dir = res_dir;
+
             let _ = update_json_command(settings_data);
         }
         Err(e) => {

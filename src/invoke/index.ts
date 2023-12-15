@@ -10,6 +10,7 @@ export type InvokeFn = {
   get_os_info: string
   app_ready: string
   delayed_restart: string
+  init_python_path: string
 }
 
 export const tyInvoke = async <T>(

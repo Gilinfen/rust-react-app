@@ -16,6 +16,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             pystart::execute_python_script,
+            pystart::init_python_path,
             chorme_v::get_chrome_version_command,
             chorme_v::download_chromedriver,
             config::update_json_command,
@@ -39,7 +40,7 @@ fn main() {
                 info!("首次执行安装");
 
                 // 初始化 settings
-                config::init_settings();
+                config::init_settings(&app.handle());
 
                 log::info!("detection_environment,{}", config::detection_environment());
 
@@ -48,6 +49,8 @@ fn main() {
                     .expect("failed to create installation flag");
             } else {
                 info!("应用启动");
+                // config::init_settings(&app.handle());
+                let _ = pystart::activate_python_venv();
             }
 
             Ok(())

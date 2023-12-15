@@ -10,11 +10,11 @@ use std::{
     env::temp_dir,
     fs::{self, File},
     io::copy,
-    path::Path,
+    path::{Path, PathBuf},
     process::Command,
     str,
 };
-use tauri::{api::path::app_data_dir, AppHandle, Manager};
+use tauri::{AppHandle, Manager};
 use tokio::spawn;
 use zip::ZipArchive;
 
@@ -77,15 +77,16 @@ fn get_file_url(osval: &str, position: &str, files: &str) -> String {
     )
 }
 
-async fn download_and_extract(
-    app_handle: &AppHandle,
-    url: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
-    // 获取应用的数据目录
-    let data_dir = app_data_dir(&app_handle.config()).expect("failed to get app data dir");
+async fn download_and_extract(url: &str) -> Result<(), Box<dyn std::error::Error>> {
+    // 获取资源目录路径
+    let settings_data = read_json_command()
+        .map_err(|e| format!("Error reading settings data: {}", e))
+        .unwrap();
+
+    let res_dir: PathBuf = PathBuf::from(&settings_data.res_dir);
     let temp_file = temp_dir().join("temp.zip");
 
-    println!("data_dir --- {:?}", data_dir);
+    info!("res_dir --- {:?}", res_dir);
 
     // 下载文件
     let response = reqwest::get(url).await?;
@@ -96,7 +97,7 @@ async fn download_and_extract(
     let mut archive = ZipArchive::new(File::open(&temp_file)?)?;
     for i in 0..archive.len() {
         let mut file = archive.by_index(i)?;
-        let outpath = data_dir.join(file.mangled_name());
+        let outpath = res_dir.join(file.mangled_name());
 
         if (*file.name()).ends_with('/') {
             fs::create_dir_all(&outpath)?;
@@ -116,7 +117,6 @@ async fn download_and_extract(
 
     Ok(())
 }
-
 #[derive(Deserialize, Debug)]
 pub struct DownloadParams {
     // 定义对象的字段
@@ -141,17 +141,21 @@ pub async fn download_chromedriver(app_handle: AppHandle, params: DownloadParams
             .unwrap_or("");
 
         // 获取资源目录路径
-        let res_dir = app_data_dir(&app_handle.config()).expect("failed to get app data dir");
+        let settings_data = read_json_command()
+            .map_err(|e| format!("Error reading settings data: {}", e))
+            .unwrap();
+
+        let res_dir: &String = &settings_data.res_dir;
 
         // 构造下载 URL
         let url: String = get_file_url(&params.os, &params.position, &params.files);
 
         // 异步下载和解压
-        match download_and_extract(&app_handle, &url).await {
+        match download_and_extract(&url).await {
             Ok(_) => {
                 info!(
                     "Download and extraction completed successfully. {}/{}/chromedriver",
-                    res_dir.to_string_lossy(),
+                    res_dir,
                     file_name.to_string()
                 );
 
@@ -171,11 +175,8 @@ pub async fn download_chromedriver(app_handle: AppHandle, params: DownloadParams
                 match read_json_command() {
                     Ok(mut settings_data) => {
                         // 成功获取 settings_data，现在可以修改它
-                        settings_data.chromedriver = format!(
-                            "{}/{}/chromedriver",
-                            res_dir.to_string_lossy(),
-                            file_name.to_string()
-                        );
+                        settings_data.chromedriver =
+                            format!("{}/{}/chromedriver", res_dir, file_name.to_string());
                         let _ = update_json_command(settings_data);
                     }
                     Err(e) => {

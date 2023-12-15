@@ -55,6 +55,16 @@ function App() {
       <Button
         onClick={async () => {
           const time1 = +new Date()
+          await tyInvoke('init_python_path')
+          const time2 = +new Date()
+          setTimes(time2 - time1)
+        }}
+      >
+        设置 Python 环境
+      </Button>
+      <Button
+        onClick={async () => {
+          const time1 = +new Date()
           await tyInvoke('execute_python_script', {
             cmdType: 'Python',
           })
