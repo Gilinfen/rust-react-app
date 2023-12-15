@@ -2,7 +2,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use log::info;
-use tauri::Manager;
 
 mod chorme_v;
 mod config;
@@ -26,7 +25,7 @@ fn main() {
             install::delayed_restart
         ])
         .setup(|app: &mut tauri::App| {
-            let config = app.config();
+            let app_config = app.config();
 
             // 保存 app 为全局变量
             globalstate::APP_HANDLE
@@ -36,22 +35,19 @@ fn main() {
             // 注册日志监听
             logger::configure_logging(app.handle().clone());
 
-            if install::is_first_run(&config) {
+            if install::is_first_run(&app_config) {
                 info!("首次执行安装");
-                if let Some(window) = app.get_window("setup") {
-                    window.show().unwrap();
-                    install::create_installation_flag(&config)
-                        .expect("failed to create installation flag");
-                    log::info!("detection_environment,{}", config::detection_environment());
 
-                    // 初始化 settings
-                    config::init_settings();
-                }
+                // 初始化 settings
+                config::init_settings();
+
+                log::info!("detection_environment,{}", config::detection_environment());
+
+                // 安装标识并重启
+                install::create_installation_flag(&app_config)
+                    .expect("failed to create installation flag");
             } else {
                 info!("应用启动");
-                if let Some(window) = app.get_window("main") {
-                    window.show().unwrap();
-                }
             }
 
             Ok(())

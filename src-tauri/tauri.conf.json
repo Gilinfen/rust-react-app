@@ -45,13 +45,6 @@
         "title": "rust-react",
         "width": 800,
         "height": 600
-      },
-      {
-        "title": "安装",
-        "label": "setup",
-        "visible": false,
-        "width": 800,
-        "height": 600
       }
     ]
   }
