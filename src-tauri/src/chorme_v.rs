@@ -1,3 +1,7 @@
+use crate::{
+    config::{read_json_command, update_json_command},
+    utils::run_command,
+};
 use log::info;
 use reqwest;
 use serde::{Deserialize, Serialize};
@@ -13,8 +17,6 @@ use std::{
 use tauri::{api::path::app_data_dir, AppHandle, Manager};
 use tokio::spawn;
 use zip::ZipArchive;
-
-use crate::config::{read_json_command, update_json_command};
 
 #[cfg(target_os = "macos")]
 fn get_chrome_version() -> Result<String, String> {
@@ -33,43 +35,23 @@ fn get_chrome_version() -> Result<String, String> {
         .next()
         .unwrap_or("");
 
-    let output = Command::new(format!("{}/Contents/MacOS/Google Chrome", chrome_path))
-        .arg("--version")
-        .output()
-        .map_err(|e| e.to_string())?;
-
-    if output.status.success() {
-        Ok(str::from_utf8(&output.stdout)
-            .unwrap_or("")
-            .trim()
-            .to_string())
-    } else {
-        Err("Failed to get Chrome version on macOS".into())
-    }
+    let chrome_command = format!("{}/Contents/MacOS/Google Chrome", chrome_path);
+    run_command(&chrome_command, &["--version"])
+        .or_else(|_| Err("Failed to get Chrome version on macOS".into()))
 }
 
 #[cfg(target_os = "windows")]
 fn get_chrome_version() -> Result<String, String> {
-    // 这里的代码可以根据您的具体需求进行调整
-    // 示例代码仅供参考
-    let output = Command::new("reg")
-        .args([
+    run_command(
+        "reg",
+        &[
             "query",
-            r"HKLM\Software\Google\Chrome\BLBeacon",
+            "\"HKEY_CURRENT_USER\\Software\\Google\\Chrome\\BLBeacon\"",
             "/v",
             "version",
-        ])
-        .output()
-        .map_err(|e| e.to_string())?;
-
-    if output.status.success() {
-        Ok(str::from_utf8(&output.stdout)
-            .unwrap_or("")
-            .trim()
-            .to_string())
-    } else {
-        Err("Failed to get Chrome version on Windows".into())
-    }
+        ],
+    )
+    .or_else(|_| Err("Failed to get Chrome version on Windows".into()))
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]

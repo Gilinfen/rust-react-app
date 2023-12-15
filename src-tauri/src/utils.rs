@@ -47,11 +47,11 @@ pub fn find_command_path(command_name: &str) -> Result<String, String> {
         "which"
     };
 
-    run_command(command, command_name)
+    run_command(command, &[command_name])
 }
 
-pub fn run_command(command: &str, arg: &str) -> Result<String, String> {
-    let output = Command::new(command).arg(arg).output();
+pub fn run_command(command: &str, args: &[&str]) -> Result<String, String> {
+    let output = Command::new(command).args(args).output();
 
     match output {
         Ok(o) => {
