@@ -62,7 +62,12 @@ fn get_chrome_version() -> Result<String, String> {
 // chorme 版本
 #[tauri::command]
 pub fn get_chrome_version_command() -> Result<String, String> {
-    get_chrome_version()
+    let version: Result<String, String> = get_chrome_version();
+    match &version {
+        Ok(v) => info!("Chrome version: {}", v),
+        Err(e) => info!("Error getting Chrome version: {}", e),
+    }
+    version
 }
 
 // 获取 chrome/chromedriver url
