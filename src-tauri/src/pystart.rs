@@ -92,7 +92,7 @@ pub enum CommandType {
 
 /// 执行 python
 #[tauri::command]
-pub async fn execute_python_script(cmd_type: CommandType) -> Result<String, String> {
+pub async fn execute_python_script(cmd_type: CommandType, py_file: &str) -> Result<String, String> {
     // 获取 settings json 内容
     let settings_data = read_json_command()?;
 
@@ -101,7 +101,7 @@ pub async fn execute_python_script(cmd_type: CommandType) -> Result<String, Stri
 
     match cmd_type {
         CommandType::Python => {
-            let executable_path = resolve_resource_path("../pythonrc/main.pyc");
+            let executable_path = resolve_resource_path(&format!("../pythonrc/{}", &py_file));
             cmd_python_script(&python, &[&executable_path]).await
         }
         CommandType::Pip => {

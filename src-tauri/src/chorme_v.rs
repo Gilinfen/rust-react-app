@@ -171,12 +171,17 @@ pub async fn download_chromedriver(app_handle: AppHandle, params: DownloadParams
                     .emit_all("message-download-chromedriver", Some(json))
                     .expect("failed to emit event");
 
+                // 添加权限
+                // run_command("chmod", &["+x", &settings_data.chromedriver], None);
+
                 // 设置路径
                 match read_json_command() {
                     Ok(mut settings_data) => {
                         // 成功获取 settings_data，现在可以修改它
-                        settings_data.chromedriver =
+                        let chromedriver =
                             format!("{}/{}/chromedriver", res_dir, file_name.to_string());
+                        settings_data.chromedriver = chromedriver;
+
                         let _ = update_json_command(settings_data);
                     }
                     Err(e) => {

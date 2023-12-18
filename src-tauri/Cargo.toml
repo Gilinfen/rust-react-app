@@ -7,7 +7,7 @@ license = ""
 repository = ""
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# S`e more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
 tauri-build = { version = "1.5", features = [] }
@@ -23,6 +23,10 @@ reqwest = "0.11"                                                            # �
 zip = "0.6.6"                                                               # 检查最新版本
 tokio = { version = "1", features = ["full"] }                              # 检查最新版本
 dotenv = "0.15.0"
+rsa = "0.9.6"                                                               # 使用 rsa 库，版本 0.4.0
+sha2 = "0.10.8"                                                             # 用于哈希的 sha2 库
+base64 = "0.21.5"
+
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

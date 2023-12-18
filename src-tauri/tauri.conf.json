@@ -30,7 +30,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": ["../pythonrc", "../settings.json"]
+      "resources": ["../pythonrc", "../settings.json", "../public_key.pem"]
     },
     "security": {
       "csp": null

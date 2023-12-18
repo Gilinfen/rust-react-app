@@ -29,9 +29,9 @@ export default function Chrome() {
     setDwF(true)
     await invoke('download_chromedriver', {
       params: {
-        os: 'Win',
-        position: '1226644',
-        files: 'chromedriver_win32.zip',
+        os: 'Mac_Arm',
+        position: '1213882',
+        files: 'chromedriver_mac64.zip',
       },
     }).catch((err) => {
       console.log(err)

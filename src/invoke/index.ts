@@ -3,6 +3,7 @@ import { InvokeArgs } from '@tauri-apps/api/tauri'
 
 export type InvokeFn = {
   execute_python_script: string
+  init_python_path: string
   get_chrome_version_command: string
   download_chromedriver: string
   update_json_command: string
@@ -10,7 +11,6 @@ export type InvokeFn = {
   get_os_info: string
   app_ready: string
   delayed_restart: string
-  init_python_path: string
 }
 
 export const tyInvoke = async <T>(

@@ -4,6 +4,7 @@ import './App.css'
 import LogViewer from './log'
 import Chrome from './chrome'
 import { tyInvoke } from './invoke'
+import Verify from './verify'
 
 function App() {
   const [times, setTimes] = useState(0)
@@ -41,6 +42,7 @@ function App() {
 
   return (
     <div className="container">
+      <Verify />
       <h1>Settings</h1>
       <p>{settings?.python_path}</p>
       <p>{settings?.chromedriver}</p>
@@ -67,6 +69,7 @@ function App() {
           const time1 = +new Date()
           await tyInvoke('execute_python_script', {
             cmdType: 'Python',
+            pyFile: 'sele.pyc',
           })
           const time2 = +new Date()
           setTimes(time2 - time1)
@@ -79,6 +82,7 @@ function App() {
           const time1 = +new Date()
           await tyInvoke('execute_python_script', {
             cmdType: 'Pip',
+            pyFile: '',
           })
           const time2 = +new Date()
           setTimes(time2 - time1)
